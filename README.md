@@ -24,13 +24,133 @@ Tendo em vista o costumeiro *orçamento reduzido* dos espaços culturais públic
 
 Por isto, uma das premissas deste **curador virtual** é promover uma solução *simples*, *barata* e *replicável* para tornar qualquer espaço cultural mais acessível com poucas mudanças físicas. Através de pisos podotáteis, é possível criar um *caminho sequencial* e informar à pessoa com deficiência visual que ela chegou à *próxima obra* ou objeto de interesse e, assim, ela interage com um **assistente de voz** com inteligência artificial de Llama 3.
 
-## Implementação
+## Experiência do usuário
 
-### Assistente de voz para a pesssoa com deficiência
+### Assistente de voz
 
-### Painel administrativo para o responsável pelo espaço cultural
+### Painel administrativo
 
-## Estrutura
+## Especificação técnica
 O projeto está dividido em dois repositórios: *hackathon-llama-acessibilidade* (você está aqui) para o **front-end** e *hackathon-llama-acessibilidade-backend* (https://github.com/AllanAntunes/hackathon-llama-acessibilidade-backend) para o **back-end**.
 
 O **front-end** utiliza React.js e realiza acesso ao microfone e ao alto-falante do dispositivo para possibilitar a conversa com o curador inteligente.
+
+O **back-end** fornece uma REST API através do framework Flask, escrito em Python.
+
+### Assistente de voz
+
+* **GET /conversation/start**
+Response: 
+```json
+{
+    "sessionId": "string",
+    "audioUrl": "string",
+    "transcription": "string"
+}
+```
+
+* **POST /conversation/message**
+Request:
+```json
+{
+    "sessionId": "string",
+    "audio": "base64"
+}
+```
+
+Response:
+```json
+{
+    "sessionId": "string",
+    "audioUrl": "string",
+    "transcription": "string"
+}
+```
+
+### Painel administrativo
+
+#### Espaços culturais
+
+* **GET /space**
+Response:
+```json
+[
+    {
+        "name": "string",
+        "description": "string",
+        "thumbnailUrl": "string"
+    },
+    {
+        "name": "string",
+        "description": "string",
+        "thumbnailUrl": "string"
+    }
+]
+```
+
+* **GET /space/<id>**
+Response:
+```json
+```
+
+* **POST /space**
+Request:
+```json
+{
+    "name": "string",
+    "description": "string",
+    "thumbnailUrl": "string"
+}
+```
+
+Response:
+```json
+{
+    "success": boolean,
+    "spaceId": "string"
+}
+```
+
+* **PUT /space**
+Request:
+```json
+{
+    "spaceId": "string",
+    "name": "string",
+    "description": "string",
+    "thumbnailUrl": "string"
+}
+```
+
+Response:
+```json
+{
+    "success": boolean,
+    "spaceId": "string"
+}
+```
+
+* **DELETE /space**
+Request:
+```json
+{
+    "spaceId": "string"
+}
+```
+
+Response:
+```json
+{
+    "success": boolean,
+    "spaceId": "string"
+}
+```
+
+
+#### Items do espaço cultural
+
+* **GET /space/<id>/item**
+* **GET /space/<id>/item/<id>**
+* **POST /space/<id>/item**
+* **PUT /space/<id>/item**
+* **DELETE /space/<id>/item**
