@@ -37,7 +37,7 @@ O **front-end** utiliza React.js e realiza acesso ao microfone e ao alto-falante
 
 O **back-end** fornece uma REST API através do framework Flask, escrito em Python.
 
-### Assistente de voz
+### 🟢 Assistente de voz
 
 ➡️ **GET /conversation/start**
 <br>
@@ -71,9 +71,9 @@ Response:
 }
 ```
 
-### Painel administrativo
+### 🟢 Painel administrativo
 
-#### Espaços culturais
+#### 🔵 Espaços culturais
 
 ➡️ **GET /space**
 <br>
@@ -168,7 +168,7 @@ Response:
 }
 ```
 
-#### Items do espaço cultural
+#### 🔵 Items do espaço cultural
 
 ➡️ **GET /space/:spaceId/item**
 <br>
