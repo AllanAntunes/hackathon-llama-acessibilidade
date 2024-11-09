@@ -51,7 +51,7 @@ Response:
 }
 ```
 
-* **POST /conversation/message**
+➡️ **POST /conversation/message**
 <br>
 
 Request:
