@@ -162,12 +162,14 @@ Response:
 [
     {
         "itemId": "string",
+        "step": integer,
         "name": "string",
         "description": "string",
         "imageUrl": "string"
     },
     {
         "itemId": "string",
+        "step": integer,
         "name": "string",
         "description": "string",
         "imageUrl": "string"
@@ -180,6 +182,7 @@ Response:
 ```json
 {
     "itemId": "string",
+    "step": integer,
     "name": "string",
     "description": "string",
     "imageUrl": "string"
@@ -191,6 +194,7 @@ Request:
 ```json
 {
     "name": "string",
+    "step": integer,
     "description": "string",
     "imageUrl": "string"
 }
@@ -209,6 +213,7 @@ Request:
 ```json
 {
     "itemId": "string",
+    "step": integer,
     "name": "string",
     "description": "string",
     "imageUrl": "string"
