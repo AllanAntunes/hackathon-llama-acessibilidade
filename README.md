@@ -76,11 +76,13 @@ Response:
 ```json
 [
     {
+        "spaceId": "string",
         "name": "string",
         "description": "string",
         "thumbnailUrl": "string"
     },
     {
+        "spaceId": "string",
         "name": "string",
         "description": "string",
         "thumbnailUrl": "string"
@@ -88,9 +90,15 @@ Response:
 ]
 ```
 
-* **GET /space/<id>**
+* **GET /space/:spaceId**
 Response:
 ```json
+{
+    "spaceId": "string",
+    "name": "string",
+    "description": "string",
+    "thumbnailUrl": "string"
+}
 ```
 
 * **POST /space**
@@ -146,11 +154,87 @@ Response:
 }
 ```
 
-
 #### Items do espaço cultural
 
-* **GET /space/<id>/item**
-* **GET /space/<id>/item/<id>**
-* **POST /space/<id>/item**
-* **PUT /space/<id>/item**
-* **DELETE /space/<id>/item**
+* **GET /space/:spaceId/item**
+Response:
+```json
+[
+    {
+        "itemId": "string",
+        "name": "string",
+        "description": "string",
+        "imageUrl": "string"
+    },
+    {
+        "itemId": "string",
+        "name": "string",
+        "description": "string",
+        "imageUrl": "string"
+    }
+]
+```
+
+* **GET /space/:spaceId/item/:itemId**
+Response:
+```json
+{
+    "itemId": "string",
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+* **POST /space/:spaceId/item**
+Request:
+```json
+{
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+Response:
+```json
+{
+    "success": boolean,
+    "itemId": "string"
+}
+```
+
+* **PUT /space/:spaceId/item**
+Request:
+```json
+{
+    "itemId": "string",
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+Response:
+```json
+{
+    "success": boolean,
+    "itemId": "string"
+}
+```
+
+* **DELETE /space/:spaceId/item**
+Request:
+```json
+{
+    "itemId": "string"
+}
+```
+
+Response:
+```json
+{
+    "success": boolean,
+    "itemId": "string"
+}
+```
