@@ -75,7 +75,7 @@ Response:
 
 #### Espaços culturais
 
-* **GET /space**
+➡️ **GET /space**
 <br>
 
 Response:
@@ -96,7 +96,7 @@ Response:
 ]
 ```
 
-* **GET /space/:spaceId**
+➡️ **GET /space/:spaceId**
 <br>
 
 Response:
@@ -109,7 +109,7 @@ Response:
 }
 ```
 
-* **POST /space**
+➡️ **POST /space**
 <br>
 
 Request:
@@ -129,7 +129,7 @@ Response:
 }
 ```
 
-* **PUT /space**
+➡️ **PUT /space**
 <br>
 
 Request:
@@ -150,7 +150,7 @@ Response:
 }
 ```
 
-* **DELETE /space**
+➡️ **DELETE /space**
 <br>
 
 Request:
@@ -170,7 +170,7 @@ Response:
 
 #### Items do espaço cultural
 
-* **GET /space/:spaceId/item**
+➡️ **GET /space/:spaceId/item**
 <br>
 
 Response:
@@ -193,7 +193,7 @@ Response:
 ]
 ```
 
-* **GET /space/:spaceId/item/:itemId**
+➡️ **GET /space/:spaceId/item/:itemId**
 <br>
 
 Response:
@@ -207,7 +207,7 @@ Response:
 }
 ```
 
-* **POST /space/:spaceId/item**
+➡️ **POST /space/:spaceId/item**
 <br>
 
 Request:
@@ -228,7 +228,7 @@ Response:
 }
 ```
 
-* **PUT /space/:spaceId/item**
+➡️ **PUT /space/:spaceId/item**
 <br>
 
 Request:
@@ -250,7 +250,7 @@ Response:
 }
 ```
 
-* **DELETE /space/:spaceId/item**
+➡️ **DELETE /space/:spaceId/item**
 <br>
 
 Request:
