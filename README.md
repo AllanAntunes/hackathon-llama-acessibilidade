@@ -39,7 +39,7 @@ O **back-end** fornece uma REST API através do framework Flask, escrito em Pyth
 
 ### Assistente de voz
 
-* **GET /conversation/start**
+➡️ **GET /conversation/start**
 <br>
 
 Response: 
