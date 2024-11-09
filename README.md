@@ -181,6 +181,8 @@ Response:
         "step": integer,
         "name": "string",
         "description": "string",
+        "authorName": "string",
+        "authorDescription": "string",
         "imageUrl": "string"
     },
     {
@@ -188,6 +190,8 @@ Response:
         "step": integer,
         "name": "string",
         "description": "string",
+        "authorName": "string",
+        "authorDescription": "string",
         "imageUrl": "string"
     }
 ]
@@ -203,6 +207,8 @@ Response:
     "step": integer,
     "name": "string",
     "description": "string",
+    "authorName": "string",
+    "authorDescription": "string",
     "imageUrl": "string"
 }
 ```
@@ -216,6 +222,8 @@ Request:
     "name": "string",
     "step": integer,
     "description": "string",
+    "authorName": "string",
+    "authorDescription": "string",
     "imageUrl": "string"
 }
 ```
@@ -238,6 +246,8 @@ Request:
     "step": integer,
     "name": "string",
     "description": "string",
+    "authorName": "string",
+    "authorDescription": "string",
     "imageUrl": "string"
 }
 ```
