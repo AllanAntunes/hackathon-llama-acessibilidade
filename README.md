@@ -40,6 +40,8 @@ O **back-end** fornece uma REST API através do framework Flask, escrito em Pyth
 ### Assistente de voz
 
 * **GET /conversation/start**
+<br>
+
 Response: 
 ```json
 {
@@ -50,6 +52,8 @@ Response:
 ```
 
 * **POST /conversation/message**
+<br>
+
 Request:
 ```json
 {
@@ -72,6 +76,8 @@ Response:
 #### Espaços culturais
 
 * **GET /space**
+<br>
+
 Response:
 ```json
 [
@@ -91,6 +97,8 @@ Response:
 ```
 
 * **GET /space/:spaceId**
+<br>
+
 Response:
 ```json
 {
@@ -102,6 +110,8 @@ Response:
 ```
 
 * **POST /space**
+<br>
+
 Request:
 ```json
 {
@@ -120,6 +130,8 @@ Response:
 ```
 
 * **PUT /space**
+<br>
+
 Request:
 ```json
 {
@@ -139,6 +151,8 @@ Response:
 ```
 
 * **DELETE /space**
+<br>
+
 Request:
 ```json
 {
@@ -157,6 +171,8 @@ Response:
 #### Items do espaço cultural
 
 * **GET /space/:spaceId/item**
+<br>
+
 Response:
 ```json
 [
@@ -178,6 +194,8 @@ Response:
 ```
 
 * **GET /space/:spaceId/item/:itemId**
+<br>
+
 Response:
 ```json
 {
@@ -190,6 +208,8 @@ Response:
 ```
 
 * **POST /space/:spaceId/item**
+<br>
+
 Request:
 ```json
 {
@@ -209,6 +229,8 @@ Response:
 ```
 
 * **PUT /space/:spaceId/item**
+<br>
+
 Request:
 ```json
 {
@@ -229,6 +251,8 @@ Response:
 ```
 
 * **DELETE /space/:spaceId/item**
+<br>
+
 Request:
 ```json
 {
