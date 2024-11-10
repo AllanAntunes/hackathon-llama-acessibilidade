@@ -107,6 +107,7 @@ export default function ChatBubble() {
 
       // Create and play new audio
       audioRef.current.src = audioUrl
+      audioRef.current.playbackRate = 1.35
       await audioRef.current.play()
     } catch (error) {
       console.error('Error playing audio:', error)

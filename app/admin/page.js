@@ -10,7 +10,7 @@ export default function AdminDashboard() {
     totalSpaces: 0,
     totalItems: 0,
     activeUsers: 45, // Keeping this mocked for now
-    monthlyVisits: 1234 // Keeping this mocked for now
+    monthlyVisits: 223 // Keeping this mocked for now
   });
   const [recentSpaces, setRecentSpaces] = useState([]);
   const [popularItems, setPopularItems] = useState([]);
