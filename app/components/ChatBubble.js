@@ -104,12 +104,18 @@ export default function ChatBubble() {
   }
 
   const handleAudioUpload = async (audioBlob) => {
+    if (!sessionId) {
+      setMessage("Erro: Sessão não iniciada")
+      return
+    }
+
     setIsThinking(true)
     setMessage("Pensando")
     
     try {
       const formData = new FormData()
-      formData.append('sessionId', '4')
+      formData.append('spaceId', '4')
+      formData.append('sessionId', sessionId.toString())
       formData.append('audioFile', audioBlob, 'audio.wav')
 
       const response = await fetch(`${API_BASE_URL}/conversation/message`, {
