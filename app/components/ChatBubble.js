@@ -12,7 +12,7 @@ export default function ChatBubble() {
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
   const [sessionId, setSessionId] = useState(null)
-  const audioRef = useRef(new Audio())
+  const audioRef = useRef(null)
   const [isLongText, setIsLongText] = useState(false)
 
   // Get initial session
@@ -96,12 +96,16 @@ export default function ChatBubble() {
 
   const playAudioResponse = async (audioUrl) => {
     try {
+      if (!audioRef.current) {
+        audioRef.current = new window.Audio()
+      }
+      
       // Stop any currently playing audio
       audioRef.current.pause()
       audioRef.current.src = ''
 
       // Create and play new audio
-      audioRef.current = new Audio(audioUrl)
+      audioRef.current.src = audioUrl
       await audioRef.current.play()
     } catch (error) {
       console.error('Error playing audio:', error)
@@ -152,6 +156,10 @@ export default function ChatBubble() {
 
   // Cleanup audio on component unmount
   useEffect(() => {
+    // Initialize audio on client side
+    audioRef.current = new window.Audio()
+    
+    // Cleanup on unmount
     return () => {
       if (audioRef.current) {
         audioRef.current.pause()
