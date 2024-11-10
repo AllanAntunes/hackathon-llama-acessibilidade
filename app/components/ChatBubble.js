@@ -6,7 +6,7 @@ const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJk
 
 export default function ChatBubble() {
   const [isThinking, setIsThinking] = useState(false)
-  const [message, setMessage] = useState("Pressione e segure para falar")
+  const [message, setMessage] = useState("Clique para começar a gravar")
   const [dots, setDots] = useState("")
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef(null)
@@ -168,21 +168,23 @@ export default function ChatBubble() {
     }
   }, [])
 
-  const handleTouchStart = (e) => {
+  const handleClick = async (e) => {
     e.preventDefault()
-    startRecording()
-  }
-
-  const handleTouchEnd = async (e) => {
-    e.preventDefault()
-    if (!mediaRecorderRef.current || !isRecording) return
     
-    setIsRecording(false)
-    mediaRecorderRef.current.stop()
-    mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
-    
-    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-    await handleAudioUpload(audioBlob)
+    if (!isRecording) {
+      // Start recording
+      startRecording()
+    } else {
+      // Stop recording
+      if (!mediaRecorderRef.current) return
+      
+      setIsRecording(false)
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+      
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
+      await handleAudioUpload(audioBlob)
+    }
   }
 
   // Update isLongText whenever message changes
@@ -215,11 +217,7 @@ export default function ChatBubble() {
           cursor-pointer
           select-none
         `}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleTouchStart}
-        onMouseUp={handleTouchEnd}
-        onMouseLeave={handleTouchEnd}
+        onClick={handleClick}
       />
       <div className={`
         flex justify-center items-center text-2xl tracking-wide
