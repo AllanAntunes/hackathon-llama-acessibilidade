@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       // Fetch spaces
-      const spacesResponse = await fetch("http://api.acessibilidade.tec.br/space", {
+      const spacesResponse = await fetch("https://api.acessibilidade.tec.br/space", {
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
         }
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
       const spacesData = await spacesResponse.ok ? await spacesResponse.json() : [];
 
       // Fetch items from space ID 4
-      const itemsResponse = await fetch("http://api.acessibilidade.tec.br/space/4/item", {
+      const itemsResponse = await fetch("https://api.acessibilidade.tec.br/space/4/item", {
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
         }

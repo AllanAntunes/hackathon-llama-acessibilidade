@@ -35,7 +35,7 @@ function SpaceModal({ space, isOpen, onClose, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://api.acessibilidade.tec.br/space", {
+      const response = await fetch("https://api.acessibilidade.tec.br/space", {
         method: space ? "PUT" : "POST",
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF',
@@ -146,7 +146,7 @@ export default function SpacesPage() {
 
   const fetchSpaces = async () => {
     try {
-      const response = await fetch("http://api.acessibilidade.tec.br/space", {
+      const response = await fetch("https://api.acessibilidade.tec.br/space", {
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
         }
@@ -170,7 +170,7 @@ export default function SpacesPage() {
     if (!confirm("Tem certeza que deseja excluir este espaço?")) return;
 
     try {
-      const response = await fetch("http://api.acessibilidade.tec.br/space", {
+      const response = await fetch("https://api.acessibilidade.tec.br/space", {
         method: "DELETE",
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF',

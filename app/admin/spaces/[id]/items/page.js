@@ -51,7 +51,7 @@ function ItemModal({ item, spaceId, isOpen, onClose, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://api.acessibilidade.tec.br/space/${spaceId}/item`, {
+      const response = await fetch(`https://api.acessibilidade.tec.br/space/${spaceId}/item`, {
         method: item ? "PUT" : "POST",
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF',
@@ -227,7 +227,7 @@ export default function SpaceItemsPage({ params: paramsPromise }) {
 
   const fetchSpace = async () => {
     try {
-      const response = await fetch(`http://api.acessibilidade.tec.br/space/${params.id}`, {
+      const response = await fetch(`https://api.acessibilidade.tec.br/space/${params.id}`, {
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
         }
@@ -244,7 +244,7 @@ export default function SpaceItemsPage({ params: paramsPromise }) {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch(`http://api.acessibilidade.tec.br/space/${params.id}/item`, {
+      const response = await fetch(`https://api.acessibilidade.tec.br/space/${params.id}/item`, {
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
         }
@@ -265,7 +265,7 @@ export default function SpaceItemsPage({ params: paramsPromise }) {
     if (!confirm("Tem certeza que deseja excluir este item?")) return;
 
     try {
-      const response = await fetch(`http://api.acessibilidade.tec.br/space/${params.id}/item`, {
+      const response = await fetch(`https://api.acessibilidade.tec.br/space/${params.id}/item`, {
         method: "DELETE",
         headers: {
           'Authorization': '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF',
