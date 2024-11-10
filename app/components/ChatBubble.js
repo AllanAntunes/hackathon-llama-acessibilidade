@@ -15,6 +15,7 @@ export default function ChatBubble() {
   const [sessionId, setSessionId] = useState(null)
   const audioRef = useRef(null)
   const [isLongText, setIsLongText] = useState(false)
+  const thinkingAudioRef = useRef(null)
 
   // Get initial session
   useEffect(() => {
@@ -114,6 +115,22 @@ export default function ChatBubble() {
     }
   }
 
+  const playThinkingMusic = () => {
+    if (!thinkingAudioRef.current) {
+      thinkingAudioRef.current = new Audio('/music.mp3')
+      thinkingAudioRef.current.loop = true
+      thinkingAudioRef.current.volume = 0.1
+    }
+    thinkingAudioRef.current.play()
+  }
+
+  const stopThinkingMusic = () => {
+    if (thinkingAudioRef.current) {
+      thinkingAudioRef.current.pause()
+      thinkingAudioRef.current.currentTime = 0
+    }
+  }
+
   const handleAudioUpload = async (audioBlob) => {
     if (!sessionId) {
       setMessage("Erro: Sessão não iniciada")
@@ -122,6 +139,7 @@ export default function ChatBubble() {
 
     setIsThinking(true)
     setMessage("Pensando")
+    playThinkingMusic()
     
     try {
       const formData = new FormData()
@@ -142,6 +160,7 @@ export default function ChatBubble() {
       }
 
       const data = await response.json()
+      stopThinkingMusic()
       setIsThinking(false)
       setMessage(data.transcription)
 
@@ -151,6 +170,7 @@ export default function ChatBubble() {
       }
     } catch (error) {
       console.error('Error uploading audio:', error)
+      stopThinkingMusic()
       setIsThinking(false)
       setMessage("Desculpe, não consegui entender. Poderia repetir?")
     }
@@ -166,6 +186,10 @@ export default function ChatBubble() {
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current.src = ''
+      }
+      if (thinkingAudioRef.current) {
+        thinkingAudioRef.current.pause()
+        thinkingAudioRef.current.src = ''
       }
     }
   }, [])
@@ -245,8 +269,8 @@ export default function ChatBubble() {
           ${isThinking ? 'animate-pulse' : 'animate-float'}
           ${isRecording ? 'shadow-[0_0_50px_rgba(139,92,246,0.3)]' : ''}
           ${isLongText 
-            ? 'w-40 h-40 mb-4 scale-95' 
-            : 'w-80 h-80 mb-8'
+            ? 'w-32 h-32 md:w-40 md:h-40 mb-4 scale-95' 
+            : 'w-48 h-48 md:w-80 md:h-80 mb-8'
           }
           cursor-pointer
           select-none
