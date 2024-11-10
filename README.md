@@ -44,7 +44,7 @@ The **front end** uses Next.js and accesses the device's microphone and speaker 
 
 The **back end** provides a REST API via the Flask framework, written in Python.
 
-![Architecture Schema](https://llama-hackathon.s3.us-east-2.amazonaws.com/image.png)
+![Architecture schema for the Virtual Curator AI project](https://llama-hackathon.s3.us-east-2.amazonaws.com/image.png)
 
 ### 🟢 Voice Assistant
 
