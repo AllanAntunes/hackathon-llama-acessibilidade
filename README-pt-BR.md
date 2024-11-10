@@ -38,6 +38,8 @@ O **front-end** utiliza React.js e realiza acesso ao microfone e ao alto-falante
 
 O **back-end** fornece uma REST API através do framework Flask, escrito em Python.
 
+![Diagrama da Arquitetura do Projeto](https://llama-hackathon.s3.us-east-2.amazonaws.com/image.png)
+
 ### 🟢 Assistente de voz
 
 ➡️ **GET /conversation/session**
