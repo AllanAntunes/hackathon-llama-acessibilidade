@@ -35,7 +35,8 @@ https://acessibilidade.tec.br/
 ### Administrative Panel
 https://acessibilidade.tec.br/admin/spaces/
 
-![Administrative Panel](https://llama-hackathon.s3.us-east-2.amazonaws.com/Screenshot+2024-11-10+at+10.11.40.png)
+![Administrative Panel - Photo One](https://llama-hackathon.s3.us-east-2.amazonaws.com/Screenshot+2024-11-10+at+10.11.40.png)
+![Administrative Panel - Photo Two](https://llama-hackathon.s3.us-east-2.amazonaws.com/Screenshot+2024-11-10+at+11.56.31.png)
 
 ## Technical Specification
 The project is divided into two repositories: *hackathon-llama-acessibilidade* (you are here) for the **front end** and *hackathon-llama-acessibilidade-backend* (https://github.com/AllanAntunes/hackathon-llama-acessibilidade-backend) for the **back end**.
