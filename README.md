@@ -56,6 +56,7 @@ Request (form-data):
 | Field      | Type   |
 |------------|--------|
 | sessionId  | string |
+| spaceId    | string |
 | audioFile  | file   |
 
 Response:
