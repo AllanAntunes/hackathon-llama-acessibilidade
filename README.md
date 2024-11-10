@@ -45,7 +45,7 @@ O **back-end** fornece uma REST API através do framework Flask, escrito em Pyth
 Response: 
 ```json
 {
-    "sessionId": "string",
+    "sessionId": integer,
     "audioUrl": "string",
     "transcription": "string"
 }
@@ -57,7 +57,7 @@ Response:
 Request:
 ```json
 {
-    "sessionId": "string",
+    "sessionId": integer,
     "audio": "base64"
 }
 ```
@@ -65,7 +65,7 @@ Request:
 Response:
 ```json
 {
-    "sessionId": "string",
+    "sessionId": integer,
     "audioUrl": "string",
     "transcription": "string"
 }
@@ -82,13 +82,13 @@ Response:
 ```json
 [
     {
-        "spaceId": "string",
+        "spaceId": integer,
         "name": "string",
         "description": "string",
         "thumbnailUrl": "string"
     },
     {
-        "spaceId": "string",
+        "spaceId": integer,
         "name": "string",
         "description": "string",
         "thumbnailUrl": "string"
@@ -102,7 +102,7 @@ Response:
 Response:
 ```json
 {
-    "spaceId": "string",
+    "spaceId": integer,
     "name": "string",
     "description": "string",
     "thumbnailUrl": "string"
@@ -125,7 +125,7 @@ Response:
 ```json
 {
     "success": boolean,
-    "spaceId": "string"
+    "spaceId": integer
 }
 ```
 
@@ -135,7 +135,7 @@ Response:
 Request:
 ```json
 {
-    "spaceId": "string",
+    "spaceId": integer,
     "name": "string",
     "description": "string",
     "thumbnailUrl": "string"
@@ -146,7 +146,7 @@ Response:
 ```json
 {
     "success": boolean,
-    "spaceId": "string"
+    "spaceId": integer
 }
 ```
 
@@ -156,7 +156,7 @@ Response:
 Request:
 ```json
 {
-    "spaceId": "string"
+    "spaceId": integer
 }
 ```
 
@@ -164,7 +164,7 @@ Response:
 ```json
 {
     "success": boolean,
-    "spaceId": "string"
+    "spaceId": integer
 }
 ```
 
@@ -177,7 +177,7 @@ Response:
 ```json
 [
     {
-        "itemId": "string",
+        "itemId": integer,
         "step": integer,
         "name": "string",
         "description": "string",
@@ -186,7 +186,7 @@ Response:
         "imageUrl": "string"
     },
     {
-        "itemId": "string",
+        "itemId": integer,
         "step": integer,
         "name": "string",
         "description": "string",
@@ -203,7 +203,7 @@ Response:
 Response:
 ```json
 {
-    "itemId": "string",
+    "itemId": integer,
     "step": integer,
     "name": "string",
     "description": "string",
@@ -232,7 +232,7 @@ Response:
 ```json
 {
     "success": boolean,
-    "itemId": "string"
+    "itemId": integer
 }
 ```
 
@@ -242,7 +242,7 @@ Response:
 Request:
 ```json
 {
-    "itemId": "string",
+    "itemId": integer,
     "step": integer,
     "name": "string",
     "description": "string",
@@ -256,7 +256,7 @@ Response:
 ```json
 {
     "success": boolean,
-    "itemId": "string"
+    "itemId": integer
 }
 ```
 
@@ -266,7 +266,7 @@ Response:
 Request:
 ```json
 {
-    "itemId": "string"
+    "itemId": integer
 }
 ```
 
@@ -274,6 +274,6 @@ Response:
 ```json
 {
     "success": boolean,
-    "itemId": "string"
+    "itemId": integer
 }
 ```
