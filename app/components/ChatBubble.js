@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { IoClose } from "react-icons/io5"
 
 const API_BASE_URL = 'https://api.acessibilidade.tec.br'
 const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
@@ -150,7 +151,7 @@ export default function ChatBubble() {
     } catch (error) {
       console.error('Error uploading audio:', error)
       setIsThinking(false)
-      setMessage("Erro ao processar áudio. Tente novamente.")
+      setMessage("Desculpe, não consegui entender. Poderia repetir?")
     }
   }
 
@@ -168,14 +169,26 @@ export default function ChatBubble() {
     }
   }, [])
 
+  const stopAudioAndReset = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.src = ''
+    }
+    setMessage("Clique para começar a gravar")
+    setIsThinking(false)
+  }
+
   const handleClick = async (e) => {
-    e.preventDefault()
+    if (e) e.preventDefault()
     
-    if (!isRecording) {
-      // Start recording
-      startRecording()
-    } else {
-      // Stop recording
+    // Always stop any playing audio first
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.src = ''
+    }
+
+    // If we're already recording, stop and process
+    if (isRecording) {
       if (!mediaRecorderRef.current) return
       
       setIsRecording(false)
@@ -184,7 +197,11 @@ export default function ChatBubble() {
       
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
       await handleAudioUpload(audioBlob)
+      return
     }
+
+    // Start new recording
+    startRecording()
   }
 
   // Update isLongText whenever message changes
@@ -193,14 +210,30 @@ export default function ChatBubble() {
   }, [message])
 
   return (
-    <div className={`
-      min-h-screen flex flex-col items-center justify-center relative
-      transition-all duration-700 ease-in-out
-      ${isRecording 
-        ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50' 
-        : 'bg-white'
-      }
-    `}>
+    <div 
+      className={`
+        min-h-screen flex flex-col items-center justify-center relative
+        transition-all duration-700 ease-in-out cursor-pointer
+        ${isRecording 
+          ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50' 
+          : 'bg-white'
+        }
+      `}
+      onClick={handleClick}
+    >
+      {(audioRef.current && !audioRef.current.paused) && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            stopAudioAndReset()
+          }}
+          className="absolute top-8 right-8 p-2 rounded-full bg-violet-600 hover:bg-violet-700 
+            transition-colors duration-300 shadow-lg"
+        >
+          <IoClose className="w-6 h-6 text-white" />
+        </button>
+      )}
+
       <div 
         className={`
           rounded-full 
@@ -217,7 +250,10 @@ export default function ChatBubble() {
           cursor-pointer
           select-none
         `}
-        onClick={handleClick}
+        onClick={(e) => {
+          e.stopPropagation() // Prevent double triggering with background
+          handleClick()
+        }}
       />
       <div className={`
         flex justify-center items-center text-2xl tracking-wide
