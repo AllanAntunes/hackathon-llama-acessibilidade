@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { MdDashboard, MdLogout } from "react-icons/md";
 import { FaLandmark } from "react-icons/fa";
 import { RiMenuFill, RiCloseLine } from "react-icons/ri";
+import Image from "next/image";
 
 export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -31,16 +32,15 @@ export default function AdminLayout({ children }) {
         } bg-white/90 backdrop-blur-md border-r border-gray-200/50 w-64 shadow-lg`}
       >
         <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg transform rotate-6" />
-              <div className="absolute inset-0 bg-white rounded-lg shadow-inner flex items-center justify-center">
-                <span className="text-lg">🤖</span>
-              </div>
-            </div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Curador.ia
-            </h2>
+          <div className="flex items-center">
+            <Image
+              src="/curadorIA_logo.png"
+              alt="Curador.ia Logo"
+              width={150}
+              height={40}
+              className="object-contain"
+              priority
+            />
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
