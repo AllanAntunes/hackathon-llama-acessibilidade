@@ -161,7 +161,7 @@ export default function AdminDashboard() {
 
       {/* Popular Items */}
       <div className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Items Populares</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Itens Populares</h2>
         <div className="space-y-4">
           {popularItems.map((item) => (
             <div 

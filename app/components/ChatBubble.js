@@ -63,24 +63,29 @@ export default function ChatBubble() {
       audioChunksRef.current = []
 
       mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
+        audioChunksRef.current.push(event.data)
       }
 
-      mediaRecorderRef.current.start()
+      // Request data every 250ms to ensure we get the audio chunks
+      mediaRecorderRef.current.start(250)
       setIsRecording(true)
       setMessage("Ouvindo...")
     } catch (error) {
       console.error('Error starting recording:', error)
+      setMessage("Erro ao acessar microfone")
     }
   }
 
   const stopRecording = async () => {
-    if (!mediaRecorderRef.current) return
+    if (!mediaRecorderRef.current) return null
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       mediaRecorderRef.current.onstop = async () => {
+        if (audioChunksRef.current.length === 0) {
+          console.error('No audio data recorded')
+          resolve(null)
+          return
+        }
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
         resolve(audioBlob)
       }
@@ -115,7 +120,7 @@ export default function ChatBubble() {
     try {
       const formData = new FormData()
       formData.append('spaceId', '4')
-      formData.append('sessionId', sessionId.toString())
+      formData.append('sessionId', String(sessionId))
       formData.append('audioFile', audioBlob, 'audio.wav')
 
       const response = await fetch(`${API_BASE_URL}/conversation/message`, {
@@ -155,15 +160,20 @@ export default function ChatBubble() {
     }
   }, [])
 
-  const handleTouchStart = async (e) => {
+  const handleTouchStart = (e) => {
     e.preventDefault()
-    await startRecording()
+    startRecording()
   }
 
   const handleTouchEnd = async (e) => {
     e.preventDefault()
+    if (!mediaRecorderRef.current || !isRecording) return
+    
     setIsRecording(false)
-    const audioBlob = await stopRecording()
+    mediaRecorderRef.current.stop()
+    mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+    
+    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
     await handleAudioUpload(audioBlob)
   }
 
