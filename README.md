@@ -181,6 +181,7 @@ Response:
         "step": integer,
         "name": "string",
         "description": "string",
+        "aiDescription": "string",
         "authorName": "string",
         "authorDescription": "string",
         "imageUrl": "string"
@@ -190,6 +191,7 @@ Response:
         "step": integer,
         "name": "string",
         "description": "string",
+        "aiDescription": "string",
         "authorName": "string",
         "authorDescription": "string",
         "imageUrl": "string"
@@ -207,6 +209,7 @@ Response:
     "step": integer,
     "name": "string",
     "description": "string",
+    "aiDescription": "string",
     "authorName": "string",
     "authorDescription": "string",
     "imageUrl": "string"
