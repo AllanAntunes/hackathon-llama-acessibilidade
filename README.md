@@ -1,4 +1,5 @@
 # Curador.ia
+![Logomarca do projeto Curador.ia](https://llama-hackathon.s3.us-east-2.amazonaws.com/curadorIA+(1).png)
 
 ## Problema
 Deficientes visuais rotineiramente se deparam com a falta de acessibilidade em espaços culturais. O termo **"acessibilidade"** não detém-se somente à estrutura física, mas também ao **acesso à informação**.
