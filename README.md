@@ -39,28 +39,25 @@ O **back-end** fornece uma REST API através do framework Flask, escrito em Pyth
 
 ### 🟢 Assistente de voz
 
-➡️ **GET /conversation/start**
+➡️ **GET /conversation/session**
 <br>
 
 Response: 
 ```json
 {
-    "sessionId": integer,
-    "audioUrl": "string",
-    "transcription": "string"
+    "sessionId": integer
 }
 ```
 
 ➡️ **POST /conversation/message**
 <br>
 
-Request:
-```json
-{
-    "sessionId": integer,
-    "audio": "base64"
-}
-```
+Request (form-data):
+| Field      | Type   |
+|------------|--------|
+| sessionId  | string |
+| spaceId    | string |
+| audioFile  | file   |
 
 Response:
 ```json
