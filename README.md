@@ -11,7 +11,7 @@ I – a bens culturais em formato acessível;
 
 Observe este caso: no *Museu da Imagem e do Som* (MIS), em Campinas/SP, há a marcação de chão em partes do espaço, conforme a foto abaixo. Entretanto, como uma pessoa com deficiência visual saberá que há televisores ali?
 
-![Foto de uma exposição de televisores antigos no Museu da Imagem e do Som, em Campinas, SP.](https://github.com/AllanAntunes/hackathon-llama-acessibilidade/blob/main/docs/img/piso_podotatil_2.jpg)
+![Foto de uma exposição de televisores antigos no Museu da Imagem e do Som, em Campinas, SP.](https://llama-hackathon.s3.us-east-2.amazonaws.com/piso_podotatil_2.jpg)
 
 A princípio, podemos imaginar que um curador deverá estar ao lado do visitante para guiá-lo durante a exploração do espaço cultural. Mas, sem dúvidas, isto reduz a autonomia da pessoa com deficiência. Além disso, nem sempre haverá um colaborador disponível para esta visita guiada.
 
