@@ -40,9 +40,11 @@ https://acessibilidade.tec.br/admin/spaces/
 ## Technical Specification
 The project is divided into two repositories: *hackathon-llama-acessibilidade* (you are here) for the **front end** and *hackathon-llama-acessibilidade-backend* (https://github.com/AllanAntunes/hackathon-llama-acessibilidade-backend) for the **back end**.
 
-The **front end** uses React.js and accesses the device's microphone and speaker to enable interaction with the intelligent curator.
+The **front end** uses Next.js and accesses the device's microphone and speaker to enable interaction with the intelligent curator.
 
 The **back end** provides a REST API via the Flask framework, written in Python.
+
+![Architect Schema](https://llama-hackathon.s3.us-east-2.amazonaws.com/image.png)
 
 ### 🟢 Voice Assistant
 
