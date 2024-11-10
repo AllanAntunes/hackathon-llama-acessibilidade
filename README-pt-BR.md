@@ -1,50 +1,44 @@
 # Curador.ia
 ![Logomarca do projeto Curador.ia](https://llama-hackathon.s3.us-east-2.amazonaws.com/curadorIA+(1).png)
 
-## Social Barrier
-Visually impaired individuals routinely encounter a lack of accessibility in cultural spaces. The term **"accessibility"** not only refers to physical structure but also to **access to information**.
+## Problema
+Deficientes visuais rotineiramente se deparam com a falta de acessibilidade em espaços culturais. O termo **"acessibilidade"** não detém-se somente à estrutura física, mas também ao **acesso à informação**.
 
-The *Brazilian Inclusion Law* (No. 13,146/2015, also known by the acronym LBI) stipulates:
+A *Lei Brasileira de Inclusão* (nº 13.146/2015, também chamada pela sigla LBI) determina:
 
-Art. 42. People with disabilities have the right to culture, sports, tourism, and leisure on an **equal basis with others**, with guaranteed access to:
-I – cultural assets in an accessible format;
+Art. 42. A pessoa com deficiência tem direito à cultura, ao esporte, ao turismo e ao lazer em **igualdade de oportunidades** com as demais pessoas, sendo-lhe garantido o acesso:
+I – a bens culturais em formato acessível;
 (...)
 
-Consider this example: at the *Museum of Image and Sound* (MIS) in Campinas, São Paulo, there is floor marking in parts of the space, as shown in the photo below. However, how will a visually impaired person know there are televisions there?
+Observe este caso: no *Museu da Imagem e do Som* (MIS), em Campinas/SP, há a marcação de chão em partes do espaço, conforme a foto abaixo. Entretanto, como uma pessoa com deficiência visual saberá que há televisores ali?
 
-![Picture from an exposition showing old television models at Museu da Imagem e do Som (Campinas, São Paulo)](https://llama-hackathon.s3.us-east-2.amazonaws.com/piso_podotatil_2.jpg)
+![Foto de uma exposição de televisores antigos no Museu da Imagem e do Som, em Campinas, SP.](https://llama-hackathon.s3.us-east-2.amazonaws.com/piso_podotatil_2.jpg)
 
-At first, we might imagine that a curator would need to be alongside the visitor to guide them during the exploration of the cultural space. However, this undoubtedly reduces the autonomy of the person with a disability. Additionally, there will not always be a staff member available for such guided visits.
+A princípio, podemos imaginar que um curador deverá estar ao lado do visitante para guiá-lo durante a exploração do espaço cultural. Mas, sem dúvidas, isto reduz a autonomia da pessoa com deficiência. Além disso, nem sempre haverá um colaborador disponível para esta visita guiada.
 
-## Resolution
-This is where *artificial intelligence* becomes a key element. What if we created a **virtual curator** that could significantly enhance **access to information** for visually impaired individuals?
+## Solução
+É aqui que a *inteligência artificial* torna-se um elemento-chave. E se criássemos um **curador virtual** que elevasse significativamente o **acesso à informação** da pessoa com deficiência visual?
 
-The **Brazilian Artificial Intelligence Plan** has as one of its foundations: "Transforming the lives of Brazilians through sustainable and inclusive innovations based on Artificial Intelligence".
+O **Plano Brasileiro de Inteligência Artificial** tem como uma de suas bases: "Transformar a vida dos brasileiros por meio de inovações sustentáveis e inclusivas baseadas em Inteligência Artificial".
 
-Given the typically *limited budgets* of public cultural spaces, it is not always feasible to implement more advanced physical infrastructure, such as proximity sensors and speakers to describe the exhibits.
+Tendo em vista o costumeiro *orçamento reduzido* dos espaços culturais públicos, nem sempre é possível a implantação de infraestrutura física mais tecnológica, com sensores de proximidade e caixas de som para descrever as obras apresentadas.
 
-For this reason, one of the premises of this **virtual curator** is to provide a *simple*, *affordable*, and *replicable* solution to make any cultural space more accessible with minimal physical changes. By using tactile flooring, it’s possible to create a *sequential path*, informing the visually impaired person that they have reached the *next exhibit* or object of interest, and allowing them to interact with a *voice assistant* powered by Llama 3 artificial intelligence.
+Por isto, uma das premissas deste **curador virtual** é promover uma solução *simples*, *barata* e *replicável* para tornar qualquer espaço cultural mais acessível com poucas mudanças físicas. Através de pisos podotáteis, é possível criar um *caminho sequencial* e informar à pessoa com deficiência visual que ela chegou à *próxima obra* ou objeto de interesse e, assim, ela interage com um **assistente de voz** com inteligência artificial de Llama 3.
 
-## User Experience
+## Experiência do usuário
 
-### Voice Assistant
-https://acessibilidade.tec.br/
+### Assistente de voz
 
-![Voice Assistant](https://llama-hackathon.s3.us-east-2.amazonaws.com/Screenshot+2024-11-10+at+10.13.33.png)
+### Painel administrativo
 
-### Administrative Panel
-https://acessibilidade.tec.br/admin/spaces/
+## Especificação técnica
+O projeto está dividido em dois repositórios: *hackathon-llama-acessibilidade* (você está aqui) para o **front-end** e *hackathon-llama-acessibilidade-backend* (https://github.com/AllanAntunes/hackathon-llama-acessibilidade-backend) para o **back-end**.
 
-![Administrative Panel](https://llama-hackathon.s3.us-east-2.amazonaws.com/Screenshot+2024-11-10+at+10.11.40.png)
+O **front-end** utiliza React.js e realiza acesso ao microfone e ao alto-falante do dispositivo para possibilitar a conversa com o curador inteligente.
 
-## Technical Specification
-The project is divided into two repositories: *hackathon-llama-acessibilidade* (you are here) for the **front end** and *hackathon-llama-acessibilidade-backend* (https://github.com/AllanAntunes/hackathon-llama-acessibilidade-backend) for the **back end**.
+O **back-end** fornece uma REST API através do framework Flask, escrito em Python.
 
-The **front end** uses React.js and accesses the device's microphone and speaker to enable interaction with the intelligent curator.
-
-The **back end** provides a REST API via the Flask framework, written in Python.
-
-### 🟢 Voice Assistant
+### 🟢 Assistente de voz
 
 ➡️ **GET /conversation/session**
 <br>
@@ -75,7 +69,7 @@ Response:
 }
 ```
 
-### 🟢 Administrative Panel
+### 🟢 Painel administrativo
 
 #### 🔵 Espaços culturais
 
@@ -172,7 +166,7 @@ Response:
 }
 ```
 
-#### 🔵 Cultural space items
+#### 🔵 Items do espaço cultural
 
 ➡️ **GET /space/:spaceId/item**
 <br>
