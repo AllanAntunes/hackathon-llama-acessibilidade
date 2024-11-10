@@ -56,8 +56,7 @@ Request:
 ```json
 {
     "sessionId": integer,
-    "audioUrl": "string",
-    "transcription": "string"
+    "audioFile": file,
 }
 ```
 
