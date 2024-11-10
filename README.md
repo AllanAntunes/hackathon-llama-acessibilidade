@@ -52,13 +52,11 @@ Response:
 ➡️ **POST /conversation/message**
 <br>
 
-Request:
-```json
-{
-    "sessionId": integer,
-    "audioFile": file,
-}
-```
+Request (form-data):
+| Field      | Type   |
+|------------|--------|
+| sessionId  | string |
+| audioFile  | file   |
 
 Response:
 ```json
