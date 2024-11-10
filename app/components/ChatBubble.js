@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 
-const API_BASE_URL = 'http://api.acessibilidade.tec.br'
+const API_BASE_URL = 'https://api.acessibilidade.tec.br'
 const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
 
 export default function ChatBubble() {
@@ -13,6 +13,7 @@ export default function ChatBubble() {
   const audioChunksRef = useRef([])
   const [sessionId, setSessionId] = useState(null)
   const audioRef = useRef(new Audio())
+  const [isLongText, setIsLongText] = useState(false)
 
   // Get initial session
   useEffect(() => {
@@ -160,9 +161,14 @@ export default function ChatBubble() {
     await handleAudioUpload(audioBlob)
   }
 
+  // Update isLongText whenever message changes
+  useEffect(() => {
+    setIsLongText(message.length > 50)
+  }, [message])
+
   return (
     <div className={`
-      min-h-screen flex flex-col items-center justify-center
+      min-h-screen flex flex-col items-center justify-center relative
       transition-all duration-700 ease-in-out
       ${isRecording 
         ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50' 
@@ -171,14 +177,17 @@ export default function ChatBubble() {
     `}>
       <div 
         className={`
-          w-80 h-80 rounded-full 
+          rounded-full 
           bg-gradient-to-br from-violet-600 to-violet-900
           shadow-[0_8px_30px_rgb(0,0,0,0.12)]
           flex items-center justify-center
-          transition-all duration-500 ease-in-out
+          transition-all duration-700 ease-in-out
           ${isThinking ? 'animate-pulse' : 'animate-float'}
-          ${isRecording ? 'scale-95 shadow-[0_0_50px_rgba(139,92,246,0.3)]' : ''}
-          mb-8
+          ${isRecording ? 'shadow-[0_0_50px_rgba(139,92,246,0.3)]' : ''}
+          ${isLongText 
+            ? 'w-40 h-40 mb-4 scale-95' 
+            : 'w-80 h-80 mb-8'
+          }
           cursor-pointer
           select-none
         `}
@@ -188,16 +197,21 @@ export default function ChatBubble() {
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       />
-      <div className="w-80 flex justify-center items-center text-2xl tracking-wide">
+      <div className={`
+        flex justify-center items-center text-2xl tracking-wide
+        transition-all duration-700 ease-in-out
+        ${isLongText ? 'w-[80%] max-w-2xl' : 'w-80'}
+      `}>
         <div className="relative flex justify-center items-center">
           <span className={`
             font-medium text-center
             bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text
+            transition-all duration-300
             ${isThinking || isRecording
               ? 'animate-pulse-text opacity-50' 
               : 'text-transparent'
             }
-            transition-opacity duration-300
+            ${isLongText ? 'text-xl leading-relaxed' : 'text-2xl'}
           `}>
             {message}
           </span>

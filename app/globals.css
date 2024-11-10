@@ -34,3 +34,10 @@ body {
 .animate-pulse-text {
   animation: pulse-text 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Add smooth transitions for all transformations */
+* {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 700ms;
+}
