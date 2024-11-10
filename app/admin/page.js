@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalSpaces: 0,
     totalItems: 0,
@@ -136,14 +138,21 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {recentSpaces.map((space) => (
             <div key={space.spaceId} className="border rounded-lg overflow-hidden">
-              <img 
-                src={space.thumbnailUrl} 
-                alt={space.name}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="font-medium text-gray-800">{space.name}</h3>
-                <p className="text-sm text-gray-500 line-clamp-2 mt-1">{space.description}</p>
+              <div 
+                onClick={() => router.push(`/admin/spaces/${space.spaceId}/items`)}
+                className="cursor-pointer"
+              >
+                <img 
+                  src={space.thumbnailUrl} 
+                  alt={space.name}
+                  className="w-full h-48 object-cover hover:opacity-90 transition-opacity"
+                />
+                <div className="p-4">
+                  <h3 className="font-medium text-gray-800 hover:text-indigo-600 transition-colors">
+                    {space.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 line-clamp-2 mt-1">{space.description}</p>
+                </div>
               </div>
             </div>
           ))}
@@ -155,14 +164,20 @@ export default function AdminDashboard() {
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Items Populares</h2>
         <div className="space-y-4">
           {popularItems.map((item) => (
-            <div key={item.itemId} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg">
+            <div 
+              key={item.itemId} 
+              onClick={() => router.push(`/admin/spaces/4/items`)}
+              className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+            >
               <img 
                 src={item.imageUrl} 
                 alt={item.name}
                 className="w-16 h-16 object-cover rounded-lg"
               />
               <div className="flex-1">
-                <h3 className="font-medium text-gray-800">{item.name}</h3>
+                <h3 className="font-medium text-gray-800 hover:text-indigo-600 transition-colors">
+                  {item.name}
+                </h3>
                 <p className="text-sm text-gray-500 line-clamp-1">{item.description}</p>
               </div>
               <div className="text-right">

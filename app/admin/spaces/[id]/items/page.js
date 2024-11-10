@@ -325,7 +325,7 @@ export default function SpaceItemsPage({ params: paramsPromise }) {
           <span className="text-gray-800">{space?.name}</span>
         </div>
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Items do Espaço</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Itens do Espaço</h1>
           <button
             onClick={() => {
               setSelectedItem(null);

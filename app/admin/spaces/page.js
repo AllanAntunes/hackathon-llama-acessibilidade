@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import BaseModal from "@/app/components/BaseModal";
 import { FiUpload } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
 function SpaceModal({ space, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -139,6 +140,7 @@ export default function SpacesPage() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetchSpaces();
@@ -240,21 +242,28 @@ export default function SpacesPage() {
             key={space.spaceId}
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
           >
-            <div className="relative h-48">
-              <img
-                src={space.thumbnailUrl}
-                alt={space.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div 
+              onClick={() => router.push(`/admin/spaces/${space.spaceId}/items`)}
+              className="cursor-pointer"
+            >
+              <div className="relative h-48">
+                <img
+                  src={space.thumbnailUrl}
+                  alt={space.name}
+                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              </div>
+              <div className="p-4">
+                <h2 className="text-xl font-semibold text-gray-800 hover:text-indigo-600 transition-colors mb-2 line-clamp-1">
+                  {space.name}
+                </h2>
+                <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
+                  {space.description}
+                </p>
+              </div>
             </div>
-            <div className="p-4">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2 line-clamp-1">
-                {space.name}
-              </h2>
-              <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
-                {space.description}
-              </p>
+            <div className="px-4 pb-4">
               <div className="flex gap-2">
                 <button
                   onClick={() => handleEditClick(space)}
