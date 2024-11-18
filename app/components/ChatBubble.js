@@ -1,47 +1,43 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { IoClose } from "react-icons/io5"
+import { AudioRecorder } from '../utils/audioRecorder'
+import { AudioAnalyzer } from '../utils/audioAnalyzer'
+import { ApiService } from '../utils/apiService'
+import { VOICE_THRESHOLD, MAX_SILENT_FRAMES } from '../utils/audioConfig'
 
 const API_BASE_URL = 'https://api.acessibilidade.tec.br'
-const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
+const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF' // Replace with your actual API key
 
 export default function ChatBubble() {
   const [isThinking, setIsThinking] = useState(false)
-  const [message, setMessage] = useState("Clique para começar a gravar")
-  const [dots, setDots] = useState("")
-  const [isRecording, setIsRecording] = useState(false)
-  const mediaRecorderRef = useRef(null)
-  const audioChunksRef = useRef([])
+  const [message, setMessage] = useState('Esperando fala...')
+  const [transcription, setTranscription] = useState('')
+  const [dots, setDots] = useState('')
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [isRecordingVoice, setIsRecordingVoice] = useState(false)
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [sessionId, setSessionId] = useState(null)
+  const [audioError, setAudioError] = useState(null)
   const audioRef = useRef(null)
   const [isLongText, setIsLongText] = useState(false)
   const thinkingAudioRef = useRef(null)
+  const audioRecorderRef = useRef(null)
+  const audioAnalyzerRef = useRef(null)
+  const apiServiceRef = useRef(new ApiService(API_BASE_URL, API_KEY))
 
-  // Get initial session
+  // Initialize audio recorder and analyzer once
   useEffect(() => {
-    const getSession = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/conversation/session`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': API_KEY
-          }
-        })
-        
-        if (!response.ok) {
-          throw new Error('Failed to get session')
-        }
-        
-        const data = await response.json()
-        console.log('Session created:', data)
-        setSessionId(data.sessionId)
-      } catch (error) {
-        console.error('Error getting session:', error)
-        setMessage("Erro ao iniciar sessão. Recarregue a página.")
-      }
-    }
-    getSession()
+    audioRecorderRef.current = new AudioRecorder()
+    audioAnalyzerRef.current = new AudioAnalyzer()
+  }, [])
+
+  // Initialize audio elements once
+  useEffect(() => {
+    audioRef.current = new Audio()
+    thinkingAudioRef.current = new Audio('/music.mp3')
+    thinkingAudioRef.current.loop = true
+    thinkingAudioRef.current.volume = 0.2
   }, [])
 
   // Handle dots animation
@@ -50,78 +46,90 @@ export default function ChatBubble() {
 
     const dotsInterval = setInterval(() => {
       setDots(prev => {
-        if (prev === "...") return ""
-        return prev + "."
+        if (prev === '...') return ''
+        return prev + '.'
       })
     }, 500)
 
     return () => clearInterval(dotsInterval)
   }, [isThinking])
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
-      audioChunksRef.current = []
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data)
+  // Initialize API session
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        await apiServiceRef.current.initializeSession()
+        setSessionId(apiServiceRef.current.sessionId)
+      } catch (error) {
+        console.error('Error initializing session:', error)
+        setMessage('Erro ao criar sessão')
       }
-
-      // Request data every 250ms to ensure we get the audio chunks
-      mediaRecorderRef.current.start(250)
-      setIsRecording(true)
-      setMessage("Ouvindo...")
-    } catch (error) {
-      console.error('Error starting recording:', error)
-      setMessage("Erro ao acessar microfone")
     }
-  }
-
-  const stopRecording = async () => {
-    if (!mediaRecorderRef.current) return null
-
-    return new Promise((resolve) => {
-      mediaRecorderRef.current.onstop = async () => {
-        if (audioChunksRef.current.length === 0) {
-          console.error('No audio data recorded')
-          resolve(null)
-          return
-        }
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-        resolve(audioBlob)
-      }
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
-    })
-  }
+    initSession()
+  }, [])
 
   const playAudioResponse = async (audioUrl) => {
     try {
-      if (!audioRef.current) {
-        audioRef.current = new window.Audio()
-      }
-      
-      // Stop any currently playing audio
-      audioRef.current.pause()
-      audioRef.current.src = ''
+      setAudioError(null);
 
-      // Create and play new audio
-      audioRef.current.src = audioUrl
-      audioRef.current.playbackRate = 1.35
-      await audioRef.current.play()
+      stopAudioResponse();
+
+      audioRef.current.onended = () => {
+        setIsPlayingAudio(false);
+        startVoiceDetection();
+      };
+
+      audioRef.current.onerror = () => {
+        setAudioError('Erro ao reproduzir áudio');
+        setIsPlayingAudio(false);
+        startVoiceDetection();
+      };
+
+      audioRef.current.oncanplaythrough = async () => {
+        setIsPlayingAudio(true);
+        await audioRef.current.play();
+      };
+
+      if (audioUrl) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.load();
+      } else {
+        throw new Error('Invalid audio URL');
+      }
     } catch (error) {
-      console.error('Error playing audio:', error)
+      setAudioError('Erro ao configurar áudio');
+      setIsPlayingAudio(false);
+      startVoiceDetection();
+    }
+  };
+
+  const stopAudioResponse = () => {
+    if (audioRef.current) {
+      // Remove all event listeners
+      audioRef.current.onended = null
+      audioRef.current.onerror = null
+      audioRef.current.oncanplaythrough = null
+
+      // Stop and cleanup audio
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setIsPlayingAudio(false)
+    }
+
+    if (thinkingAudioRef.current) {
+      thinkingAudioRef.current.onended = null
+      thinkingAudioRef.current.onerror = null
+      thinkingAudioRef.current.pause()
+      thinkingAudioRef.current.currentTime = 0
     }
   }
 
   const playThinkingMusic = () => {
-    if (!thinkingAudioRef.current) {
-      thinkingAudioRef.current = new Audio('/music.mp3')
-      thinkingAudioRef.current.loop = true
-      thinkingAudioRef.current.volume = 0.1
+    if (thinkingAudioRef.current) {
+      thinkingAudioRef.current.play().catch(error => {
+        console.error('Error playing thinking music:', error)
+      })
     }
-    thinkingAudioRef.current.play()
   }
 
   const stopThinkingMusic = () => {
@@ -131,16 +139,10 @@ export default function ChatBubble() {
     }
   }
 
-  const handleAudioUpload = async (audioBlob) => {
-    if (!sessionId) {
-      setMessage("Erro: Sessão não iniciada")
-      return
-    }
-
-    setIsThinking(true)
-    setMessage("Pensando")
+  const handleAudioUpload = async audioBlob => {
+    setMessage('Processando...')
     playThinkingMusic()
-    
+
     try {
       const formData = new FormData()
       formData.append('spaceId', '4')
@@ -150,7 +152,7 @@ export default function ChatBubble() {
       const response = await fetch(`${API_BASE_URL}/conversation/message`, {
         method: 'POST',
         headers: {
-          'Authorization': API_KEY
+          Authorization: API_KEY
         },
         body: formData
       })
@@ -162,149 +164,227 @@ export default function ChatBubble() {
       const data = await response.json()
       stopThinkingMusic()
       setIsThinking(false)
-      setMessage(data.transcription)
+      setIsProcessing(false)
+      setTranscription(data.transcription)
+      setMessage('Esperando fala...')
+      startVoiceDetection()
+      playAudioResponse(data.audioUrl);
 
-      // Play the audio response if available
-      if (data.audioUrl) {
-        await playAudioResponse(data.audioUrl)
-      }
     } catch (error) {
       console.error('Error uploading audio:', error)
       stopThinkingMusic()
       setIsThinking(false)
-      setMessage("Desculpe, não consegui entender. Poderia repetir?")
+      setIsProcessing(false)
+      setMessage('Desculpa, não consegui entender')
+      startVoiceDetection()
     }
   }
 
-  // Cleanup audio on component unmount
+  const startVoiceDetection = async () => {
+    if (isProcessing) return
+
+    try {
+      if (!audioAnalyzerRef.current.isInitialized) {
+        const initialized = await audioAnalyzerRef.current.initialize()
+        if (!initialized) {
+          throw new Error('Failed to initialize audio analyzer')
+        }
+      }
+
+      setIsListening(true)
+      setMessage('Esperando fala...')
+      setIsRecordingVoice(false)
+
+      let consecutiveSilentFrames = 0
+      let isRecording = false
+
+      const checkAudioLevel = () => {
+        if (isProcessing) return
+
+        const audioLevel = audioAnalyzerRef.current.getAudioLevel()
+
+        if (audioLevel > VOICE_THRESHOLD) {
+          consecutiveSilentFrames = 0
+
+          // If AI is talking, stop it immediately when user speaks
+          if (isPlayingAudio) {
+            stopAudioResponse()
+          }
+
+          if (!isRecording) {
+            audioRecorderRef.current.startRecording()
+            isRecording = true
+            setIsRecordingVoice(true)
+            setMessage('Ouvindo...')
+            audioRef.current.pause()
+          }
+        } else {
+          consecutiveSilentFrames++
+          if (isRecording && consecutiveSilentFrames > MAX_SILENT_FRAMES) {
+            isRecording = false
+            setIsRecordingVoice(false)
+            setMessage('Processando...')
+            setIsProcessing(true) // Set processing state to true
+
+            audioRecorderRef.current
+              .stopRecording()
+              .then(audioBlob => {
+                if (audioBlob && audioBlob.size > 0) {
+                  return handleAudioUpload(audioBlob) // Return the promise
+                } else {
+                  setIsProcessing(false) // Reset processing state
+                  setMessage('Esperando fala...')
+                  startVoiceDetection()
+                }
+              })
+              .catch(error => {
+                console.error('Error stopping recording:', error)
+                setIsProcessing(false) // Reset processing state
+                setMessage('Desculpa, não consegui entender')
+                startVoiceDetection()
+              })
+
+            return
+          }
+        }
+        requestAnimationFrame(checkAudioLevel)
+      }
+
+      checkAudioLevel()
+    } catch (error) {
+      console.error('Failed to start voice detection:', error)
+      setIsListening(false)
+      setIsRecordingVoice(false)
+      setMessage('Erro ao acessar microfone')
+      // Retry after a delay
+      setTimeout(startVoiceDetection, 1000)
+    }
+  }
+
+  // Start voice detection on component mount
   useEffect(() => {
-    // Initialize audio on client side
-    audioRef.current = new window.Audio()
-    
-    // Cleanup on unmount
+    if (sessionId) {
+      startVoiceDetection()
+    }
+
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ''
+      // Cleanup audio analyzer
+      if (audioAnalyzerRef.current) {
+        audioAnalyzerRef.current.cleanup()
       }
-      if (thinkingAudioRef.current) {
-        thinkingAudioRef.current.pause()
-        thinkingAudioRef.current.src = ''
+
+      // Stop recording if active
+      if (audioRecorderRef.current && audioRecorderRef.current.isRecording) {
+        audioRecorderRef.current.stopRecording()
       }
+
+      setIsListening(false)
+      setIsProcessing(false)
     }
-  }, [])
-
-  const stopAudioAndReset = () => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.src = ''
-    }
-    setMessage("Clique para começar a gravar")
-    setIsThinking(false)
-  }
-
-  const handleClick = async (e) => {
-    if (e) e.preventDefault()
-    
-    // Always stop any playing audio first
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.src = ''
-    }
-
-    // If we're already recording, stop and process
-    if (isRecording) {
-      if (!mediaRecorderRef.current) return
-      
-      setIsRecording(false)
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
-      
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-      await handleAudioUpload(audioBlob)
-      return
-    }
-
-    // Start new recording
-    startRecording()
-  }
-
-  // Update isLongText whenever message changes
-  useEffect(() => {
-    setIsLongText(message.length > 50)
-  }, [message])
+  }, [sessionId])
 
   return (
-    <div 
+    <div
       className={`
         min-h-screen flex flex-col items-center justify-center relative
-        transition-all duration-700 ease-in-out cursor-pointer
-        ${isRecording 
-          ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50' 
-          : 'bg-white'
+        transition-all duration-700 ease-in-out
+        ${
+          isRecordingVoice
+            ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50'
+            : 'bg-white'
         }
       `}
-      onClick={handleClick}
     >
-      {(audioRef.current && !audioRef.current.paused) && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            stopAudioAndReset()
-          }}
-          className="absolute top-8 right-8 p-2 rounded-full bg-violet-600 hover:bg-violet-700 
-            transition-colors duration-300 shadow-lg"
-        >
-          <IoClose className="w-6 h-6 text-white" />
-        </button>
-      )}
+      {/* Voice Activity Indicator */}
+      <div className="absolute top-8 right-8">
+        <div
+          className={`
+            w-4 h-4 rounded-full 
+            ${
+              isListening && !isProcessing && !isRecordingVoice
+                ? 'bg-green-500 animate-pulse'
+                : isRecordingVoice
+                ? 'bg-red-500 animate-pulse'
+                : isProcessing
+                ? 'bg-yellow-500 animate-pulse'
+                : 'bg-gray-300'
+            }
+          `}
+        />
+      </div>
 
-      <div 
+      {/* Main Circle */}
+      <div
         className={`
+          relative
           rounded-full 
           bg-gradient-to-br from-violet-600 to-violet-900
           shadow-[0_8px_30px_rgb(0,0,0,0.12)]
           flex items-center justify-center
           transition-all duration-700 ease-in-out
           ${isThinking ? 'animate-pulse' : 'animate-float'}
-          ${isRecording ? 'shadow-[0_0_50px_rgba(139,92,246,0.3)]' : ''}
-          ${isLongText 
-            ? 'w-32 h-32 md:w-40 md:h-40 mb-4 scale-95' 
-            : 'w-48 h-48 md:w-80 md:h-80 mb-8'
+          ${
+            isRecordingVoice
+              ? 'shadow-[0_0_50px_rgba(139,92,246,0.3)]'
+              : ''
           }
-          cursor-pointer
+          ${
+            isLongText
+              ? 'w-32 h-32 md:w-40 md:h-40 mb-4 scale-95'
+              : 'w-48 h-48 md:w-80 md:h-80 mb-8'
+          }
           select-none
         `}
-        onClick={(e) => {
-          e.stopPropagation() // Prevent double triggering with background
-          handleClick()
-        }}
-      />
-      <div className={`
-        flex justify-center items-center text-2xl tracking-wide
-        transition-all duration-700 ease-in-out
-        ${isLongText ? 'w-[80%] max-w-2xl' : 'w-80'}
-      `}>
+      >
+        {/* Voice Wave Animation */}
+        {isListening && !isProcessing && !isRecordingVoice && (
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 animate-ping-slow opacity-75 rounded-full border-4 border-violet-300" />
+            <div className="absolute inset-0 animate-ping-slower opacity-50 rounded-full border-4 border-violet-200" />
+          </div>
+        )}
+      </div>
+
+      {/* Status Message */}
+      <div
+        className={`
+          flex justify-center items-center text-2xl tracking-wide mb-4
+          transition-all duration-700 ease-in-out
+          ${isLongText ? 'w-[80%] max-w-2xl' : 'w-80'}
+        `}
+      >
         <div className="relative flex justify-center items-center">
-          <span className={`
-            font-medium text-center
-            bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text
-            transition-all duration-300
-            ${isThinking || isRecording
-              ? 'animate-pulse-text opacity-50' 
-              : 'text-transparent'
-            }
-            ${isLongText ? 'text-xl leading-relaxed' : 'text-2xl'}
-          `}>
+          <span
+            className={`
+              font-medium text-center
+              bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text
+              transition-all duration-300
+              ${
+                isThinking || isRecordingVoice
+                  ? 'animate-pulse-text opacity-50'
+                  : 'text-transparent'
+              }
+              ${isLongText ? 'text-xl leading-relaxed' : 'text-2xl'}
+            `}
+          >
             {message}
           </span>
-          {(isThinking || isRecording) && (
+          {(isThinking || isRecordingVoice) && (
             <span className="bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text animate-pulse-text opacity-50">
               {dots}
             </span>
           )}
         </div>
       </div>
+
+      {/* Transcription Display */}
+      {transcription && (
+        <div className="w-[80%] max-w-2xl mt-8 p-6 rounded-lg bg-white/80 backdrop-blur-sm shadow-lg">
+          <p className="text-lg text-gray-700 leading-relaxed">
+            {transcription}
+          </p>
+        </div>
+      )}
     </div>
   )
-} 
+}
