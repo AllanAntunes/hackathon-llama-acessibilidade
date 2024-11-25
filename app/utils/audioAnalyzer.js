@@ -13,19 +13,20 @@ export class AudioAnalyzer {
     this.lastAverages = []
     this.averageWindow = 5
     this.lastNonZeroTime = Date.now()
+    this.isActive = false
   }
 
   async initialize() {
     try {
-      this.audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)()
-      this.analyzer = this.audioContext.createAnalyser()
+      if (this.isInitialized) {
+        return true
+      }
 
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      this.analyzer = this.audioContext.createAnalyser()
       Object.assign(this.analyzer, ANALYZER_CONFIG)
 
-      this.mediaStream = await navigator.mediaDevices.getUserMedia(
-        AUDIO_STREAM_CONFIG
-      )
+      this.mediaStream = await navigator.mediaDevices.getUserMedia(AUDIO_STREAM_CONFIG)
       this.source = this.audioContext.createMediaStreamSource(this.mediaStream)
       this.source.connect(this.analyzer)
 
@@ -33,14 +34,6 @@ export class AudioAnalyzer {
       this.dataArray = new Uint8Array(this.bufferLength)
       this.lastAverages = []
       this.lastNonZeroTime = Date.now()
-
-      // Monitor the audio track's enabled state
-      const audioTrack = this.mediaStream.getAudioTracks()[0]
-      if (audioTrack) {
-        audioTrack.onmute = () => {}
-        audioTrack.onunmute = () => {}
-        audioTrack.onended = () => {}
-      }
 
       this.isInitialized = true
       return true
@@ -51,40 +44,16 @@ export class AudioAnalyzer {
     }
   }
 
-  cleanup() {
-    try {
-      // Disconnect the audio source
-      if (this.source) {
-        this.source.disconnect()
-        this.source = null
-      }
+  startAnalyzing() {
+    this.isActive = true
+  }
 
-      // Stop all media tracks
-      if (this.mediaStream) {
-        this.mediaStream.getTracks().forEach(track => {
-          track.stop()
-        })
-        this.mediaStream = null
-      }
-
-      // Close the audio context
-      if (this.audioContext) {
-        this.audioContext.close()
-        this.audioContext = null
-      }
-
-      this.analyzer = null
-      this.dataArray = null
-      this.lastAverages = []
-      this.lastNonZeroTime = Date.now()
-      this.isInitialized = false
-    } catch (error) {
-      console.error('Error during AudioAnalyzer cleanup:', error)
-    }
+  stopAnalyzing() {
+    this.isActive = false
   }
 
   getAudioLevel() {
-    if (!this.isInitialized || !this.analyzer) {
+    if (!this.isInitialized || !this.analyzer || !this.isActive) {
       return 0
     }
 
@@ -123,5 +92,34 @@ export class AudioAnalyzer {
       return 0
     }
     return movingAverage
+  }
+
+  cleanup() {
+    try {
+      this.isActive = false
+      
+      if (this.source) {
+        this.source.disconnect()
+        this.source = null
+      }
+
+      if (this.mediaStream) {
+        this.mediaStream.getTracks().forEach(track => track.stop())
+        this.mediaStream = null
+      }
+
+      if (this.audioContext) {
+        this.audioContext.close()
+        this.audioContext = null
+      }
+
+      this.analyzer = null
+      this.dataArray = null
+      this.lastAverages = []
+      this.lastNonZeroTime = Date.now()
+      this.isInitialized = false
+    } catch (error) {
+      console.error('Error during AudioAnalyzer cleanup:', error)
+    }
   }
 }

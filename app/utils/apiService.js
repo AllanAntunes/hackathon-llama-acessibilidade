@@ -1,4 +1,5 @@
-import { API_BASE_URL, API_KEY } from './audioConfig'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+const AUTH_KEY = process.env.NEXT_PUBLIC_AUTH_KEY
 
 export class ApiService {
   constructor() {
@@ -11,7 +12,7 @@ export class ApiService {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Authorization': API_KEY
+          'Authorization': "0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF"
         }
       })
       
@@ -41,7 +42,7 @@ export class ApiService {
       const response = await fetch(`${API_BASE_URL}/conversation/message`, {
         method: 'POST',
         headers: {
-          'Authorization': API_KEY,
+          'Authorization': "0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF",
         },
         body: formData
       })

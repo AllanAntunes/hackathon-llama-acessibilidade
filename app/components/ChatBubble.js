@@ -5,8 +5,7 @@ import { AudioAnalyzer } from '../utils/audioAnalyzer'
 import { ApiService } from '../utils/apiService'
 import { VOICE_THRESHOLD, MAX_SILENT_FRAMES } from '../utils/audioConfig'
 
-const API_BASE_URL = 'https://api.acessibilidade.tec.br'
-const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF' // Replace with your actual API key
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export default function ChatBubble() {
   const [isThinking, setIsThinking] = useState(false)
@@ -24,21 +23,288 @@ export default function ChatBubble() {
   const thinkingAudioRef = useRef(null)
   const audioRecorderRef = useRef(null)
   const audioAnalyzerRef = useRef(null)
-  const apiServiceRef = useRef(new ApiService(API_BASE_URL, API_KEY))
+  const apiServiceRef = useRef(new ApiService())
+  const [isAutoMode, setIsAutoMode] = useState(true)
 
   // Initialize audio recorder and analyzer once
   useEffect(() => {
     audioRecorderRef.current = new AudioRecorder()
     audioAnalyzerRef.current = new AudioAnalyzer()
+    
+    return () => {
+      cleanupAudio()
+    }
   }, [])
 
-  // Initialize audio elements once
+  // Cleanup function for audio resources
+  const cleanupAudio = () => {
+    if (audioAnalyzerRef.current) {
+      audioAnalyzerRef.current.cleanup()
+      audioAnalyzerRef.current.stopAnalyzing()
+    }
+    
+    if (audioRecorderRef.current && audioRecorderRef.current.isRecording) {
+      audioRecorderRef.current.stopRecording()
+    }
+
+    // Don't reset messages if processing
+    if (!isProcessing) {
+      setIsListening(false)
+      setIsRecordingVoice(false)
+    }
+  }
+
+  // Handle mode switching
+  const toggleMode = () => {
+    cleanupAudio()
+    
+    setIsAutoMode(prev => {
+      const newMode = !prev
+      if (newMode) {
+        // Initialize auto mode
+        if (!isProcessing) {
+          initializeAutoMode()
+        }
+      } else {
+        // When switching to manual, ensure analyzer is fully cleaned up
+        if (audioAnalyzerRef.current) {
+          audioAnalyzerRef.current.cleanup()
+        }
+        if (!isProcessing) {
+          setMessage('Clique para gravar')
+        }
+      }
+      return newMode
+    })
+  }
+
+  // Initialize auto mode
+  const initializeAutoMode = async () => {
+    try {
+      // First request microphone permission
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach(track => track.stop()) // Stop initial stream
+      
+      // Then initialize analyzer
+      const initialized = await audioAnalyzerRef.current.initialize()
+      if (!initialized) {
+        throw new Error('Failed to initialize analyzer')
+      }
+      
+      audioAnalyzerRef.current.startAnalyzing() // Start analyzing explicitly
+      startVoiceDetection()
+    } catch (error) {
+      console.error('Failed to initialize auto mode:', error)
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        setMessage('Permissão do microfone negada')
+      } else {
+        setMessage('Erro ao inicializar modo automático')
+      }
+      setIsAutoMode(false)
+    }
+  }
+
+  // Auto mode voice detection
+  const startVoiceDetection = async () => {
+    if (!isAutoMode || isProcessing) return
+
+    try {
+      if (!audioAnalyzerRef.current.isInitialized) {
+        const initialized = await audioAnalyzerRef.current.initialize()
+        if (!initialized) {
+          throw new Error('Failed to initialize analyzer')
+        }
+      }
+
+      audioAnalyzerRef.current.startAnalyzing()
+      setIsListening(true)
+      setMessage('Esperando fala...')
+
+      let consecutiveSilentFrames = 0
+      let isRecording = false
+
+      const checkAudioLevel = () => {
+        if (!isAutoMode || isProcessing) return
+
+        const audioLevel = audioAnalyzerRef.current.getAudioLevel()
+
+        if (audioLevel > VOICE_THRESHOLD) {
+          handleVoiceDetected(isRecording)
+          consecutiveSilentFrames = 0
+          isRecording = true
+        } else {
+          consecutiveSilentFrames++
+          if (isRecording && consecutiveSilentFrames > MAX_SILENT_FRAMES) {
+            handleSilenceDetected()
+            isRecording = false
+            return
+          }
+        }
+
+        if (isAutoMode) {
+          requestAnimationFrame(checkAudioLevel)
+        }
+      }
+
+      checkAudioLevel()
+    } catch (error) {
+      console.error('Voice detection error:', error)
+      setMessage('Erro ao detectar voz')
+      setIsAutoMode(false)
+    }
+  }
+
+  // Handle voice detected in auto mode
+  const handleVoiceDetected = (isRecording) => {
+    if (isPlayingAudio) {
+      stopAudioResponse()
+    }
+
+    if (!isRecording) {
+      setTranscription('')
+      audioRecorderRef.current.startRecording()
+      setIsRecordingVoice(true)
+      setMessage('Ouvindo...')
+      audioRef.current?.pause()
+    }
+  }
+
+  // Handle silence detected in auto mode
+  const handleSilenceDetected = async () => {
+    setIsRecordingVoice(false)
+    setMessage('Processando...')
+    setIsProcessing(true)
+
+    try {
+      const audioBlob = await audioRecorderRef.current.stopRecording()
+      if (audioBlob?.size > 0) {
+        await handleAudioUpload(audioBlob)
+      } else {
+        resetRecordingState()
+      }
+    } catch (error) {
+      console.error('Error handling silence:', error)
+      resetRecordingState()
+    }
+  }
+
+  // Handle manual recording
+  const handleManualRecording = async () => {
+    if (isProcessing) return
+
+    try {
+      if (!isRecordingVoice) {
+        // Clear previous transcription with transition
+        setTranscription('')
+        await audioRecorderRef.current.startRecording()
+        setIsRecordingVoice(true)
+        setMessage('Gravando...')
+      } else {
+        // Stop recording and process
+        setIsRecordingVoice(false)
+        setMessage('Processando...')
+        setIsProcessing(true)
+        
+        const audioBlob = await audioRecorderRef.current.stopRecording()
+        if (audioBlob?.size > 0) {
+          await handleAudioUpload(audioBlob)
+        } else {
+          setIsProcessing(false)
+          setMessage('Clique para gravar')
+        }
+      }
+    } catch (error) {
+      console.error('Error in manual recording:', error)
+      setIsProcessing(false)
+      setIsRecordingVoice(false)
+      setMessage('Clique para gravar')
+    }
+  }
+
+  // Reset recording state
+  const resetRecordingState = () => {
+    setIsProcessing(false)
+    setIsRecordingVoice(false)
+    setMessage('Esperando fala...')
+    if (isAutoMode) {
+      startVoiceDetection()
+    }
+  }
+
+  // Handle audio upload and response
+  const handleAudioUpload = async (audioBlob) => {
+    setMessage('Processando...')
+    playThinkingMusic()
+
+    try {
+      // Create proper audio blob with correct type
+      const properAudioBlob = new Blob([audioBlob], { type: 'audio/webm' })
+      
+      const formData = new FormData()
+      formData.append('spaceId', '4')
+      formData.append('sessionId', String(sessionId))
+      formData.append('audioFile', properAudioBlob, 'audio.webm') // Change extension to webm
+
+      const response = await fetch(`${API_BASE_URL}/conversation/message`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': "0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF",
+          // Remove content-type header to let browser set it with boundary
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        console.error('Upload failed with status:', response.status)
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      handleSuccessfulUpload(data)
+    } catch (error) {
+      console.error('Upload error:', error)
+      handleFailedUpload()
+    }
+  }
+
+  const handleSuccessfulUpload = (data) => {
+    stopThinkingMusic()
+    setIsThinking(false)
+    setIsProcessing(false)
+    setTranscription(data.transcription)
+    
+    // Set correct message based on current mode
+    setMessage(isAutoMode ? 'Esperando fala...' : 'Clique para gravar')
+    
+    if (isAutoMode) {
+      startVoiceDetection()
+    }
+    
+    playAudioResponse(data.audioUrl)
+  }
+
+  const handleFailedUpload = () => {
+    stopThinkingMusic()
+    setIsThinking(false)
+    setIsProcessing(false)
+    setMessage('Desculpa, não consegui entender')
+    
+    // After error message, set appropriate mode message after a delay
+    setTimeout(() => {
+      setMessage(isAutoMode ? 'Esperando fala...' : 'Clique para gravar')
+    }, 2000)
+    
+    if (isAutoMode) {
+      startVoiceDetection()
+    }
+  }
+
+  // Initialize session when component mounts
   useEffect(() => {
-    audioRef.current = new Audio()
-    thinkingAudioRef.current = new Audio('/music.mp3')
-    thinkingAudioRef.current.loop = true
-    thinkingAudioRef.current.volume = 0.2
-  }, [])
+    if (sessionId && isAutoMode) {
+      initializeAutoMode()
+    }
+  }, [sessionId, isAutoMode])
 
   // Handle dots animation
   useEffect(() => {
@@ -139,164 +405,60 @@ export default function ChatBubble() {
     }
   }
 
-  const handleAudioUpload = async audioBlob => {
-    setMessage('Processando...')
-    playThinkingMusic()
-
-    try {
-      const formData = new FormData()
-      formData.append('spaceId', '4')
-      formData.append('sessionId', String(sessionId))
-      formData.append('audioFile', audioBlob, 'audio.wav')
-
-      const response = await fetch(`${API_BASE_URL}/conversation/message`, {
-        method: 'POST',
-        headers: {
-          Authorization: API_KEY
-        },
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to upload audio')
-      }
-
-      const data = await response.json()
-      stopThinkingMusic()
-      setIsThinking(false)
-      setIsProcessing(false)
-      setTranscription(data.transcription)
-      setMessage('Esperando fala...')
-      startVoiceDetection()
-      playAudioResponse(data.audioUrl);
-
-    } catch (error) {
-      console.error('Error uploading audio:', error)
-      stopThinkingMusic()
-      setIsThinking(false)
-      setIsProcessing(false)
-      setMessage('Desculpa, não consegui entender')
-      startVoiceDetection()
-    }
-  }
-
-  const startVoiceDetection = async () => {
-    if (isProcessing) return
-
-    try {
-      if (!audioAnalyzerRef.current.isInitialized) {
-        const initialized = await audioAnalyzerRef.current.initialize()
-        if (!initialized) {
-          throw new Error('Failed to initialize audio analyzer')
-        }
-      }
-
-      setIsListening(true)
-      setMessage('Esperando fala...')
-      setIsRecordingVoice(false)
-
-      let consecutiveSilentFrames = 0
-      let isRecording = false
-
-      const checkAudioLevel = () => {
-        if (isProcessing) return
-
-        const audioLevel = audioAnalyzerRef.current.getAudioLevel()
-
-        if (audioLevel > VOICE_THRESHOLD) {
-          consecutiveSilentFrames = 0
-
-          // If AI is talking, stop it immediately when user speaks
-          if (isPlayingAudio) {
-            stopAudioResponse()
-          }
-
-          if (!isRecording) {
-            audioRecorderRef.current.startRecording()
-            isRecording = true
-            setIsRecordingVoice(true)
-            setMessage('Ouvindo...')
-            audioRef.current.pause()
-          }
-        } else {
-          consecutiveSilentFrames++
-          if (isRecording && consecutiveSilentFrames > MAX_SILENT_FRAMES) {
-            isRecording = false
-            setIsRecordingVoice(false)
-            setMessage('Processando...')
-            setIsProcessing(true) // Set processing state to true
-
-            audioRecorderRef.current
-              .stopRecording()
-              .then(audioBlob => {
-                if (audioBlob && audioBlob.size > 0) {
-                  return handleAudioUpload(audioBlob) // Return the promise
-                } else {
-                  setIsProcessing(false) // Reset processing state
-                  setMessage('Esperando fala...')
-                  startVoiceDetection()
-                }
-              })
-              .catch(error => {
-                console.error('Error stopping recording:', error)
-                setIsProcessing(false) // Reset processing state
-                setMessage('Desculpa, não consegui entender')
-                startVoiceDetection()
-              })
-
-            return
-          }
-        }
-        requestAnimationFrame(checkAudioLevel)
-      }
-
-      checkAudioLevel()
-    } catch (error) {
-      console.error('Failed to start voice detection:', error)
-      setIsListening(false)
-      setIsRecordingVoice(false)
-      setMessage('Erro ao acessar microfone')
-      // Retry after a delay
-      setTimeout(startVoiceDetection, 1000)
-    }
-  }
-
-  // Start voice detection on component mount
-  useEffect(() => {
-    if (sessionId) {
-      startVoiceDetection()
-    }
-
-    return () => {
-      // Cleanup audio analyzer
-      if (audioAnalyzerRef.current) {
-        audioAnalyzerRef.current.cleanup()
-      }
-
-      // Stop recording if active
-      if (audioRecorderRef.current && audioRecorderRef.current.isRecording) {
-        audioRecorderRef.current.stopRecording()
-      }
-
-      setIsListening(false)
-      setIsProcessing(false)
-    }
-  }, [sessionId])
-
   return (
     <div
       className={`
         min-h-screen flex flex-col items-center justify-center relative
         transition-all duration-700 ease-in-out
-        ${
-          isRecordingVoice
-            ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50'
-            : 'bg-white'
-        }
+        ${isRecordingVoice ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50' : 'bg-white'}
+        ${!isAutoMode && !isProcessing ? 'cursor-pointer' : ''}
       `}
+      onClick={() => !isAutoMode && !isProcessing && handleManualRecording()}
     >
+      {/* Mode Toggle */}
+      <div 
+        className="absolute top-8 left-8 flex items-center gap-2"
+        onClick={e => e.stopPropagation()}
+      >
+        <button
+          onClick={toggleMode}
+          disabled={isProcessing || isRecordingVoice}
+          className={`
+            px-4 py-2 rounded-full text-sm font-medium
+            transition-all duration-300
+            ${isAutoMode 
+              ? 'bg-violet-600 text-white' 
+              : 'bg-gray-200 text-gray-700'}
+            ${(isProcessing || isRecordingVoice) 
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'hover:opacity-90'}
+          `}
+        >
+          Auto
+        </button>
+        <button
+          onClick={toggleMode}
+          disabled={isProcessing || isRecordingVoice}
+          className={`
+            px-4 py-2 rounded-full text-sm font-medium
+            transition-all duration-300
+            ${!isAutoMode 
+              ? 'bg-violet-600 text-white' 
+              : 'bg-gray-200 text-gray-700'}
+            ${(isProcessing || isRecordingVoice) 
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'hover:opacity-90'}
+          `}
+        >
+          Manual
+        </button>
+      </div>
+
       {/* Voice Activity Indicator */}
-      <div className="absolute top-8 right-8">
+      <div 
+        className="absolute top-8 right-8"
+        onClick={e => e.stopPropagation()}
+      >
         <div
           className={`
             w-4 h-4 rounded-full 
@@ -323,26 +485,15 @@ export default function ChatBubble() {
           flex items-center justify-center
           transition-all duration-700 ease-in-out
           ${isThinking ? 'animate-pulse' : 'animate-float'}
-          ${
-            isRecordingVoice
-              ? 'shadow-[0_0_50px_rgba(139,92,246,0.3)]'
-              : ''
-          }
-          ${
-            isLongText
-              ? 'w-32 h-32 md:w-40 md:h-40 mb-4 scale-95'
-              : 'w-48 h-48 md:w-80 md:h-80 mb-8'
-          }
+          ${isRecordingVoice ? 'shadow-[0_0_50px_rgba(139,92,246,0.3)]' : ''}
+          ${(message.length > 50 || (transcription && transcription.split(' ').length > 50)) 
+            ? 'w-32 h-32 md:w-40 md:h-40 mb-4 scale-95' 
+            : 'w-48 h-48 md:w-80 md:h-80 mb-8'}
+          ${!isAutoMode && !isProcessing && !isRecordingVoice ? 'hover:scale-105' : ''}
           select-none
         `}
       >
-        {/* Voice Wave Animation */}
-        {isListening && !isProcessing && !isRecordingVoice && (
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 animate-ping-slow opacity-75 rounded-full border-4 border-violet-300" />
-            <div className="absolute inset-0 animate-ping-slower opacity-50 rounded-full border-4 border-violet-200" />
-          </div>
-        )}
+        {/* Remove the text from circle */}
       </div>
 
       {/* Status Message */}
@@ -350,7 +501,9 @@ export default function ChatBubble() {
         className={`
           flex justify-center items-center text-2xl tracking-wide mb-4
           transition-all duration-700 ease-in-out
-          ${isLongText ? 'w-[80%] max-w-2xl' : 'w-80'}
+          ${(message.length > 50 || (transcription && transcription.split(' ').length > 50)) 
+            ? 'w-[80%] max-w-2xl' 
+            : 'w-80'}
         `}
       >
         <div className="relative flex justify-center items-center">
@@ -359,15 +512,13 @@ export default function ChatBubble() {
               font-medium text-center
               bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text
               transition-all duration-300
-              ${
-                isThinking || isRecordingVoice
-                  ? 'animate-pulse-text opacity-50'
-                  : 'text-transparent'
-              }
-              ${isLongText ? 'text-xl leading-relaxed' : 'text-2xl'}
+              ${isThinking || isRecordingVoice ? 'animate-pulse-text opacity-50' : 'text-transparent'}
+              ${(message.length > 50 || (transcription && transcription.split(' ').length > 50)) 
+                ? 'text-xl leading-relaxed' 
+                : 'text-2xl'}
             `}
           >
-            {message}
+            {!isAutoMode && !isRecordingVoice && !isProcessing ? 'Clique para gravar' : message}
           </span>
           {(isThinking || isRecordingVoice) && (
             <span className="bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text animate-pulse-text opacity-50">
@@ -379,8 +530,8 @@ export default function ChatBubble() {
 
       {/* Transcription Display */}
       {transcription && (
-        <div className="w-[80%] max-w-2xl mt-8 p-6 rounded-lg bg-white/80 backdrop-blur-sm shadow-lg">
-          <p className="text-lg text-gray-700 leading-relaxed">
+        <div className="w-[80%] max-w-2xl mt-8">
+          <p className="text-lg leading-relaxed font-medium text-center bg-gradient-to-r from-violet-600 to-violet-900 bg-clip-text text-transparent">
             {transcription}
           </p>
         </div>

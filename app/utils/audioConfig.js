@@ -17,6 +17,3 @@ export const AUDIO_STREAM_CONFIG = {
     autoGainControl: true
   }
 }
-
-export const API_BASE_URL = 'https://api.acessibilidade.tec.br'
-export const API_KEY = '0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF'
