@@ -156,16 +156,13 @@ export default function ChatBubble() {
 
   // Handle voice detected in auto mode
   const handleVoiceDetected = (isRecording) => {
-    if (isPlayingAudio) {
-      stopAudioResponse()
-    }
-
     if (!isRecording) {
+      // Stop any playing audio before starting recording
+      stopAudioResponse()
       setTranscription('')
       audioRecorderRef.current.startRecording()
       setIsRecordingVoice(true)
       setMessage('Ouvindo...')
-      audioRef.current?.pause()
     }
   }
 
@@ -194,7 +191,8 @@ export default function ChatBubble() {
 
     try {
       if (!isRecordingVoice) {
-        // Clear previous transcription with transition
+        // Stop any playing audio before starting recording
+        stopAudioResponse()
         setTranscription('')
         await audioRecorderRef.current.startRecording()
         setIsRecordingVoice(true)
@@ -404,6 +402,26 @@ export default function ChatBubble() {
       thinkingAudioRef.current.currentTime = 0
     }
   }
+
+  // Initialize audio elements once
+  useEffect(() => {
+    audioRef.current = new Audio()
+    thinkingAudioRef.current = new Audio('/music.mp3')
+    thinkingAudioRef.current.loop = true
+    thinkingAudioRef.current.volume = 0.2
+
+    return () => {
+      // Cleanup on unmount
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.src = ''
+      }
+      if (thinkingAudioRef.current) {
+        thinkingAudioRef.current.pause()
+        thinkingAudioRef.current.src = ''
+      }
+    }
+  }, [])
 
   return (
     <div
