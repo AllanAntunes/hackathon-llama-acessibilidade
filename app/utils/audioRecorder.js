@@ -14,9 +14,18 @@ export class AudioRecorder {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       this.audioChunks = []
       
-      this.mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      })
+      let mimeType = 'audio/webm;codecs=opus'
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/mp4' // Fallback for mobile browsers
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/ogg;codecs=opus' // Another fallback
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            throw new Error('No supported MIME type for MediaRecorder')
+          }
+        }
+      }
+
+      this.mediaRecorder = new MediaRecorder(stream, { mimeType })
 
       this.mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -32,6 +41,7 @@ export class AudioRecorder {
       this.isRecording = true
       return true
     } catch (error) {
+      console.error('Start recording error:', error)
       this.isRecording = false
       return false
     }

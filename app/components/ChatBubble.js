@@ -235,29 +235,8 @@ export default function ChatBubble() {
     playThinkingMusic()
 
     try {
-      // Create proper audio blob with correct type
-      const properAudioBlob = new Blob([audioBlob], { type: 'audio/webm' })
-      
-      const formData = new FormData()
-      formData.append('spaceId', '4')
-      formData.append('sessionId', String(sessionId))
-      formData.append('audioFile', properAudioBlob, 'audio.webm') // Change extension to webm
-
-      const response = await fetch(`${API_BASE_URL}/conversation/message`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': "0s43GUYwLLYtcsJudJZAxypxwAnlQKu5wxAffVOu0Vrkb1XSZJFGc7cAzXt0IJkF",
-          // Remove content-type header to let browser set it with boundary
-        },
-        body: formData
-      })
-
-      if (!response.ok) {
-        console.error('Upload failed with status:', response.status)
-        throw new Error('Upload failed')
-      }
-
-      const data = await response.json()
+      // Use ApiService to send audio
+      const data = await apiServiceRef.current.sendAudioMessage(audioBlob)
       handleSuccessfulUpload(data)
     } catch (error) {
       console.error('Upload error:', error)

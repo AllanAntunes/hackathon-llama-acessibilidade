@@ -1,5 +1,5 @@
 // Audio configuration constants
-export const VOICE_THRESHOLD = 28
+export const VOICE_THRESHOLD = 18
 export const REQUIRED_VOICE_SAMPLES = 3
 export const MAX_SILENT_FRAMES = 200 // About 0.17 seconds
 
